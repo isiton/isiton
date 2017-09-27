@@ -10,7 +10,7 @@ Written by [@TitPetric](https://twitter.com/TitPetric) and licensed under the pe
 
 ## Screenshot
 
-![](images/isiton.jpg)
+![](images/isiton.png)
 
 ## About
 
@@ -34,3 +34,9 @@ Usage of ./isiton-linux-amd64:
 ~~~
 
 An example isiton.json file is provided. Navigate to [http://localhost:8080](http://localhost:8080) to view the dashboard.
+
+## Other
+
+- Dev blog: https://scene-si.org
+- LeanPub Books: https://leanpub.com/u/titpetric
+- ErrorHub: https://errorhub.io
