@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+<style type="text/css" media="screen">
+	body {
+		background: #000;
+		color: #fff;
+	}
+	* {
+		font-family: "Open Sans";
+	}
+
+	.server {
+		margin: 5px;
+		padding: 5px;
+		text-align: center;
+		background: #777;
+		border-radius: 3px;
+		display: inline-block;
+	}
+	.server .addr {
+		font-size: 12px;
+		display: block;
+		background: rgba(0,0,0,0.3);
+		margin: 0 -5px -5px -5px;
+		padding: 0 5px;
+	}
+	.server h5 {
+		padding: 0;
+		margin: 0;
+		color: #fff;
+	}
+	.server h3 {
+		padding: 0;
+		margin: 0;
+		font-size: 22px;
+		text-shadow: 0 0 10px rgba(0,0,0,0.5);
+	}
+	.server.online {
+		background: #0FA24A;
+	}
+	.server.warning {
+		background: #F25022;
+	}
+	.server.offline {
+		background: #990000;
+	}
+	.sparkline-filled svg {
+		fill: rgba(60,179,113,0.25);
+	}
+
+	a, a:hover, a:active {
+		color: #090;
+		font-weight: bold;
+	}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.4.4/vue.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js" integrity="sha256-JXU9bC6uJttvR5dnFkXWImMeNfVl0MwHM8OdBtdGtJs=" crossorigin="anonymous"></script></head>
+<script src="//unpkg.com/vuetrend"></script>
+<body>
+
+<div id="container">
+
+	<p v-if="useLatency">We are currently rendering latency (ms) - <a @click="graphLatency(false)" href="#">Render Packetloss instead</a></p>
+	<p v-else>We are currently rendering packetloss (%) - <a @click="graphLatency(true)" href="#">Render Latency instead</a></p>
+
+	<div v-for="(server, index) in servers" :class="{server: true, online: (server.Latency.Avg < 30) && server.Online, warning: (server.Latency.Avg >= 30) && server.Online, offline: !server.Online}" :data-id="index">
+		<h5>{{server.name}}</h5>
+		<h3 v-if="server.Online">{{ fixed(server.Latency.Avg) }}ms</h3>
+		<h3 v-else>OFFLINE</h3>
+		<trend
+		    :data="server.chart"
+		    :gradient="['#090', '#990', '#c00']"
+			width="120" height="30" stroke-width="2">
+		  </trend>
+		<span class="addr">{{server.addr}}</span>
+	</div>
+</div>
+
+<script>
+
+
+	var hosts = new Vue({
+		el: '#container',
+		data: function() {
+			return {
+				useLatency: true,
+				servers: []
+			}
+		},
+		methods: {
+			graphLatency: function(use) {
+				this.useLatency = use
+			},
+			fixed: function(val) {
+				return val.toFixed(2)
+			},
+			message: function(message) {
+				if (message.index in this.servers) {
+					server = this.servers[message.index]
+					server.chart.shift()
+					server.chart.push(Math.round(this.useLatency ? message.Latency.Avg : message.PacketLoss))
+					server.Online = message.Online;
+					server.Latency = message.Latency;
+					Vue.set(this.servers, message.index, server)
+				} else {
+					var chart = [];
+					count = 29;
+					while (count--) {
+						chart.push(0);
+					}
+					chart.push(Math.round(this.useLatency ? message.Latency.Avg : message.PacketLoss))
+					message.chart = chart.slice(0)
+					Vue.set(this.servers, message.index, message)
+				}
+			}
+		},
+		created () {
+			window.ws = new WebSocket("ws://" + location.host + "/echo")
+			window.ws.onopen = function(evt) {
+				console.log("OPEN websocket")
+			}
+			window.ws.onclose = function(evt) {
+				setTimeout(function() { location.reload(true); }, 15000)
+				ws = null
+			}
+
+			window.ws.onmessage = function(evt) {
+				var messages = JSON.parse(evt.data);
+				for (var i=0; i<messages.length; i++) {
+					hosts.message(messages[i])
+				}
+			}
+
+			window.ws.onerror = function(evt) {
+				console.log("ERROR: " + evt.data)
+			}
+		}
+	})
+
+</script>
+
+</body>
+</html>
