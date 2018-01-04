@@ -2,9 +2,7 @@
 
 A simple cross-platform ping dashboard to monitor hosts if they respond to ping.
 
-<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/Ud7o7ynwzNcFZb7zDdSAkbq2/isiton/isiton'>
-  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/Ud7o7ynwzNcFZb7zDdSAkbq2/isiton/isiton.svg' />
-</a>
+
 
 Written by [@TitPetric](https://twitter.com/TitPetric) and licensed under the permissive [WTFPL](http://www.wtfpl.net/txt/copying/).
 
