@@ -8,7 +8,6 @@ import (
 	"flag"
 	"log"
 	"path"
-	"strconv"
 
 	"encoding/json"
 	"io/ioutil"
@@ -16,10 +15,9 @@ import (
 
 	"github.com/elazarl/go-bindata-assetfs"
 
-	"app/assets"
+	"github.com/isiton/isiton/assets"
+	"github.com/isiton/isiton/pinger"
 )
-
-//go:generate go-bindata -o assets/bindata.go -pkg assets -nomemcopy public_html/...
 
 // Serves index.html in case the requested file isn't found (or some other os.Stat error)
 func serveIndex(serve http.Handler, fs assetfs.AssetFS) http.HandlerFunc {
@@ -47,31 +45,11 @@ type Host struct {
 	Name  string `json:"name"`
 	Addr  string `json:"addr"`
 
-	PingResult
+	pinger.Result
 
 	Failures      int
 	Count         int
 	CountFailures int
-}
-
-type Latency struct {
-	Min, Avg, Max float64
-}
-
-type PingResult struct {
-	Online     bool
-	PacketLoss int64
-	Latency    Latency
-}
-
-func giveFloat(value string) float64 {
-	result, _ := strconv.ParseFloat(value, 64)
-	return result
-}
-
-func giveInt64(value string) int64 {
-	result, _ := strconv.ParseInt(value, 10, 64)
-	return result
 }
 
 func ParseConfig(filename string) (*Monitor, error) {
@@ -91,6 +69,8 @@ func main() {
 	var (
 		port   = flag.String("port", "8080", "Port for server")
 		config = flag.String("config", "isiton.json", "config file name")
+		times  = flag.Int("ping-times", 4, "Number of pings per cycle")
+		delay  = flag.Int("ping-delay", 1, "Delay after each ping (seconds)")
 	)
 	flag.Parse()
 
@@ -104,12 +84,12 @@ func main() {
 	hub := newHub()
 	go hub.run()
 
-	pdp := NewPinger()
+	pdp := pinger.New()
 
 	for key, _ := range monitor.Hosts {
 		go func(host *Host) {
 			for {
-				host.PingResult = pdp.RunPing(host.Addr)
+				host.Result = pdp.Ping(host.Addr, *times, *delay)
 				host.Count++
 				if host.Online {
 					host.Failures = 0

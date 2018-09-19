@@ -1,8 +1,7 @@
-// +build !windows
-
-package main
+package pinger
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 	"time"
@@ -10,22 +9,20 @@ import (
 	"github.com/paulstuart/ping"
 )
 
-type LinuxPdPinger struct {
+type LinuxPinger struct{}
+
+func New() Pinger {
+	return &LinuxPinger{}
 }
 
-func NewPinger() PdPinger {
-	return &LinuxPdPinger{}
-}
-
-func (p *LinuxPdPinger) RunPing(hostname string) PingResult {
-	result := PingResult{}
+func (p *LinuxPinger) Ping(hostname string, times int, delay int) Result {
+	result := Result{}
 	result.Latency.Min = 1000.0
 
 	var latencySum float64
 
-	pings := 4
 	errors := 0
-	for i := 0; i < pings; i++ {
+	for i := 0; i < times; i++ {
 		now := time.Now()
 		err := ping.Pinger(hostname, 1)
 		end := time.Now()
@@ -42,10 +39,10 @@ func (p *LinuxPdPinger) RunPing(hostname string) PingResult {
 			errors++
 			continue
 		}
-		time.Sleep(time.Second)
+		time.Sleep(time.Duration(delay) * time.Second)
 	}
-	result.PacketLoss = int64(errors) * 25
-	result.Latency.Avg = latencySum / 4.0
+	result.PacketLoss = int64(errors) * 100 / int64(times)
+	result.Latency.Avg = latencySum / float64(times)
 	result.Online = true
 	if result.PacketLoss == 100 {
 		result.Online = false
@@ -53,19 +50,19 @@ func (p *LinuxPdPinger) RunPing(hostname string) PingResult {
 	return result
 }
 
-type LinuxFallbackPdPinger struct {
+type LinuxFallbackPinger struct {
 }
 
-func NewLinuxFallbackPdPinger() *LinuxFallbackPdPinger {
-	return &LinuxFallbackPdPinger{}
+func NewLinuxFallbackPinger() *LinuxFallbackPinger {
+	return &LinuxFallbackPinger{}
 }
 
-func (p *LinuxFallbackPdPinger) RunPing(hostname string) PingResult {
-	cmd := exec.Command("/bin/ping", hostname, "-c", "4")
+func (p *LinuxFallbackPinger) Ping(hostname string, times int, delay int) Result {
+	cmd := exec.Command("/bin/ping", hostname, "-c", fmt.Sprintf("%d", times), "-i", fmt.Sprintf("%d", delay))
 	output, _ := cmd.CombinedOutput()
 	outputStr := string(output)
 
-	result := PingResult{}
+	result := Result{}
 	result.Online = !strings.Contains(outputStr, "100% packet loss")
 
 	if result.Online {

@@ -1,4 +1,4 @@
-package main
+package pinger
 
 import (
 	"bytes"
@@ -10,23 +10,22 @@ import (
 	"unsafe"
 )
 
-type WinPdPinger struct {
+type WinPinger struct {
 	handle uintptr
 }
 
-func NewPinger() PdPinger {
-	return &WinPdPinger{IcmpCreateFile()}
+func New() Pinger {
+	return &WinPinger{IcmpCreateFile()}
 }
 
-func (p *WinPdPinger) RunPing(hostname string) PingResult {
-	result := PingResult{}
+func (p *WinPinger) Ping(hostname string, times int, delay int) Result {
+	result := Result{}
 	result.Latency.Min = 1000.0
 
 	var latencySum float64
 
-	pings := 4
 	errors := 0
-	for i := 0; i < pings; i++ {
+	for i := 0; i < times; i++ {
 		if e, ok := IcmpSendEcho(p.handle, net.ParseIP(hostname)); ok {
 			latencyValue := float64(e.RoundTripTime)
 			latencySum += latencyValue
@@ -36,13 +35,13 @@ func (p *WinPdPinger) RunPing(hostname string) PingResult {
 			if latencyValue < result.Latency.Min {
 				result.Latency.Min = latencyValue
 			}
-			time.Sleep(time.Second)
+			time.Sleep(time.Duration(delay) * time.Second)
 		} else {
 			errors++
 		}
 	}
-	result.PacketLoss = int64(errors) * 100 / int64(pings)
-	result.Latency.Avg = latencySum / float64(pings)
+	result.PacketLoss = int64(errors) * 100 / int64(times)
+	result.Latency.Avg = latencySum / float64(times)
 	result.Online = true
 	if result.PacketLoss == 100 {
 		result.Online = false
