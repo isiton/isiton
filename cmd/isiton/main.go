@@ -1,8 +1,6 @@
-// Copyright 2015 The Gorilla WebSocket Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
+
+//go:generate go-bindata -o ../../assets/bindata.go -pkg assets -nomemcopy -prefix ../.. ../../public_html/...
 
 import (
 	"flag"
