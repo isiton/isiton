@@ -3,6 +3,7 @@ package main
 //go:generate go-bindata -o ../../assets/bindata.go -pkg assets -nomemcopy -prefix ../.. ../../public_html/...
 
 import (
+	"bytes"
 	"flag"
 	"log"
 	"path"
@@ -18,7 +19,7 @@ import (
 )
 
 // Serves index.html in case the requested file isn't found (or some other os.Stat error)
-func serveIndex(serve http.Handler, fs assetfs.AssetFS) http.HandlerFunc {
+func serveIndex(serve http.Handler, fs assetfs.AssetFS, monitoir *Monitor) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		_, err := fs.AssetInfo(path.Join(fs.Prefix, r.URL.Path))
 		if err != nil {
@@ -27,6 +28,9 @@ func serveIndex(serve http.Handler, fs assetfs.AssetFS) http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
+			// replace content
+			buf, _ := json.Marshal(monitoir.Settings)
+			contents = bytes.ReplaceAll(contents, []byte("{/*settingsmark*/}"), buf)
 			w.Header().Set("Content-Type", "text/html")
 			w.Write(contents)
 			return
@@ -42,6 +46,9 @@ type Monitor struct {
 
 type Settings struct {
 	Warning int `json:"warning"`
+	// latency or packetloss
+	Display string `json:"display"`
+	HideSwitch bool `json:"hide_switch"`
 }
 
 type Host struct {
@@ -126,7 +133,7 @@ func main() {
 	}
 	server := http.FileServer(&assets)
 
-	http.HandleFunc("/", serveIndex(server, assets))
+	http.HandleFunc("/", serveIndex(server, assets, monitor))
 
 	log.Println("Started listening on port", *port)
 	log.Fatal(http.ListenAndServe(":"+*port, nil))
