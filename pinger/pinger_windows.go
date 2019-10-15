@@ -120,8 +120,12 @@ func IcmpSendEcho(handle uintptr, ip net.IP) (ICMP_ECHO_REPLY32, bool) {
 		if err := binary.Read(bytes.NewReader(repData), binary.LittleEndian, &er); err != nil {
 			return ICMP_ECHO_REPLY32{}, false
 		}
-		//fmt.Printf("%#v\n%s\n", er, err)
+		//fmt.Printf("%#v\n", er)
 		//fmt.Printf("TEST %s\n", net.IP(er.Address[:]))
+		// Check for returns like 0x2b02 IP_REQ_TIMED_OUT
+		if er.Status != 0 {
+			return er, false
+		}
 		return er, true
 	}
 }
