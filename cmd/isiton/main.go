@@ -36,8 +36,14 @@ func serveIndex(serve http.Handler, fs assetfs.AssetFS) http.HandlerFunc {
 }
 
 type Monitor struct {
-	Hosts []Host `json:"hosts"`
+	Settings Settings `json:"settings"`
+	Hosts    []Host   `json:"hosts"`
 }
+
+type Settings struct {
+	Warning int `json:"warning"`
+}
+
 type Host struct {
 	Index int    `json:"index"`
 	Name  string `json:"name"`
@@ -48,6 +54,7 @@ type Host struct {
 	Failures      int
 	Count         int
 	CountFailures int
+	Warning       int
 }
 
 func ParseConfig(filename string) (*Monitor, error) {
@@ -57,8 +64,14 @@ func ParseConfig(filename string) (*Monitor, error) {
 		return config, err
 	}
 	err = json.Unmarshal(contents, &config)
+	if config.Settings.Warning == 0 {
+		config.Settings.Warning = 30
+	}
 	for index, _ := range config.Hosts {
 		config.Hosts[index].Index = index
+		if config.Hosts[index].Warning == 0 {
+			config.Hosts[index].Warning = config.Settings.Warning
+		}
 	}
 	return config, err
 }
