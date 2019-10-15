@@ -1,7 +1,27 @@
 {
-        "hosts": [
-                { "name": "isiton.info", "addr": "138.197.239.199" },
-		{ "name": "router1", "addr": "10.1.1.1" },
-		{ "name": "verdana", "addr": "192.168.1.2" }
-	]
+  "settings": {
+    "warning": 30,
+    "display": ""
+  },
+  "hosts": [
+    {
+      "name": "isiton.info",
+      "addr": "138.197.239.199",
+      "warning": 50
+    },
+    {
+      "name": "router1",
+      "addr": "10.1.1.1"
+    },
+    {
+      "name": "verdana",
+      "addr": "192.168.1.2",
+      "warning": 10
+    },
+    {
+      "name": "dns",
+      "addr": "193.2.1.66",
+      "warning": 1
+    }
+  ]
 }

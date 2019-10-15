@@ -65,7 +65,7 @@
 	<p v-if="useLatency">We are currently rendering latency (ms) - <a @click="graphLatency(false)" href="#">Render Packetloss instead</a></p>
 	<p v-else>We are currently rendering packetloss (%) - <a @click="graphLatency(true)" href="#">Render Latency instead</a></p>
 
-	<div v-for="(server, index) in servers" :class="{server: true, online: (server.Latency.Avg < 30) && server.Online, warning: (server.Latency.Avg >= 30) && server.Online, offline: !server.Online}" :data-id="index">
+	<div v-for="(server, index) in servers" :class="{server: true, online: (server.Latency.Avg < server.Warning) && server.Online, warning: (server.Latency.Avg >= server.Warning) && server.Online, offline: !server.Online}" :data-id="index">
 		<h5>{{server.name}}</h5>
 		<h3 v-if="server.Online">{{ fixed(server.Latency.Avg) }}ms</h3>
 		<h3 v-else>OFFLINE</h3>
