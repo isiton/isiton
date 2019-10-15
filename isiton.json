@@ -1,7 +1,8 @@
 {
   "settings": {
     "warning": 30,
-    "display": ""
+    "display": "latency",
+    "hide_switch": true
   },
   "hosts": [
     {

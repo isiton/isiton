@@ -85,6 +85,7 @@
 		el: '#container',
 		data: function() {
 			return {
+				settings: {/*settingsmark*/},
 				useLatency: true,
 				servers: []
 			}
@@ -117,6 +118,11 @@
 			}
 		},
 		created () {
+			// defaults
+			if (this.settings.display == "packetloss") {
+				this.useLatency = false
+			}
+
 			window.ws = new WebSocket("ws://" + location.host + "/echo")
 			window.ws.onopen = function(evt) {
 				console.log("OPEN websocket")
