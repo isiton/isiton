@@ -2,3 +2,5 @@ github.com/elazarl/go-bindata-assetfs v1.0.0 h1:G/bYguwHIzWq9ZoyUQqrjTmJbbYn3j3C
 github.com/elazarl/go-bindata-assetfs v1.0.0/go.mod h1:v+YaWX3bdea5J/mo8dSETolEo7R71Vk1u8bnjau5yw4=
 github.com/gorilla/websocket v1.4.1 h1:q7AeDBpnBk8AogcD4DSag/Ukw/KV+YhzLj2bP5HvKCM=
 github.com/gorilla/websocket v1.4.1/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
+github.com/paulstuart/ping v0.0.0-20140925212352-0345a9703e43 h1:KdVgTa60PIJyle4rgRiRDMLU4rBPlvP9/Mig8tka7Ow=
+github.com/paulstuart/ping v0.0.0-20140925212352-0345a9703e43/go.mod h1:Mqu1lFC2j84abm0x+RLoyj/uWj4iuO6mI/yabMSjX6Q=
